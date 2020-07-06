@@ -1,6 +1,10 @@
 #Motif Scan plots by A N Holding
+library(ggpubr)
+library("TxDb.Hsapiens.UCSC.hg38.knownGene")
+library(org.Hs.eg.db)
 
-plot_motifscan<-function(gene_chr,gene_start,gene_end,gene_padding) {
+
+plot_MotifScan<-function(gene_chr,gene_start,gene_end,gene_padding,title="",strand="") {
     gene_length =abs(gene_start - gene_end)
     gene_dl<-paste0(gene_chr,":",gene_start-gene_padding,",",gene_end+gene_padding)
     
@@ -34,8 +38,6 @@ plot_motifscan<-function(gene_chr,gene_start,gene_end,gene_padding) {
     
     #gene_pos
     
-    
-    library(ggpubr)
     p<-ggplot(data=motif_df, aes(x=start, y=2^score,group=motif,color=motif)) 
     p<-p+  geom_line()
     
@@ -44,28 +46,92 @@ plot_motifscan<-function(gene_chr,gene_start,gene_end,gene_padding) {
     
     p + geom_vline(aes(xintercept = pos_start)) +
         geom_vline(aes(xintercept = pos_finish)) +
-        ggtitle(gene_dl)
+        ggtitle(paste0(title, " (" ,strand, ") ", gene_dl))
 }
 
 
+sym2eg<-function(ids){
+    list_symbol2eg <- as.character(org.Hs.egALIAS2EG[mappedkeys(org.Hs.egALIAS2EG)])
+    ids <- as.character(ids)
+    outlist <- list_symbol2eg[ids]
+    names(outlist) <- ids
+    outlist[is.na(outlist)] <- paste("unknown.", ids[is.na(outlist)], sep = "")
+    outlist <- gsub("unknown.unknown.", "", outlist)
+    return(outlist)
+}
 
-#TFF1 chr21:42,362,282-42,366,535
-gene_start = 42362282
-gene_end = 42366535
-gene_chr = "chr21"
-gene_padding=10000
-plot_motifscan(gene_chr,gene_start,gene_end,gene_padding)
+getGeneLocation<-function(geneSymbol) {
+    cls <- columns(TxDb.Hsapiens.UCSC.hg38.knownGene)
+    kts <- keytypes(TxDb.Hsapiens.UCSC.hg38.knownGene)
+    locations<-select(TxDb.Hsapiens.UCSC.hg38.knownGene, keys=sym2eg(geneSymbol), columns=cls[c(16,20,17,21)], keytype=kts[5])
+    return(locations)
+}
 
-#SCN5A chr3:38,548,066-38,649,628
-gene_start = 38548066
-gene_end = 38649628
-gene_chr = "chr3"
-gene_padding=50000
-plot_motifscan(gene_chr,gene_start,gene_end,gene_padding)
+#plot_MotifScan("chr21",42362282,42366535,10000,"TFF1")
+#plot_MotifScan("chr3",38548066,38649628,50000,"SCN5A")
+#plot_MotifScan("chr3",38649526,38649672,5000,"SCN5A Promoter")
 
-#SCN5A_prom chr3:38,649,526-38,649,672
-gene_start = 38649526
-gene_end = 38649672
-gene_chr = "chr3"
-gene_padding=5000
-plot_motifscan(gene_chr,gene_start,gene_end,gene_padding)
+
+plot_MotifScanByName<-function(geneSymbol, padding) {
+    
+    geneLocation<-getGeneLocation(geneSymbol)   
+    
+    plot_MotifScan(geneLocation$TXCHROM[1],geneLocation$TXSTART[1],geneLocation$TXEND[1],padding,geneSymbol,geneLocation$TXSTRAND[1])
+}
+
+
+pdf("output.pdf")
+plot_MotifScanByName("TFF1",10000)
+plot_MotifScanByName("SCN5A",50000)
+plot_MotifScanByName("ATP1A1",50000)
+
+plot_MotifScanByName("ATP1A2",50000)
+plot_MotifScanByName("ATP1A3",50000)
+plot_MotifScanByName("ATP1A4",50000)
+
+plot_MotifScanByName("ATP1B1",50000)
+plot_MotifScanByName("ATP1B2",50000)
+
+plot_MotifScanByName("SLC5A1",50000)
+plot_MotifScanByName("SLC5A2",50000)
+
+plot_MotifScanByName("SLC38A1",50000)
+plot_MotifScanByName("SLC38A3",50000)
+plot_MotifScanByName("SLC38A5",50000)
+plot_MotifScanByName("SLC38A7",50000)
+
+plot_MotifScanByName("SLC7A5",50000)
+plot_MotifScanByName("SLC7A8",50000)
+
+plot_MotifScanByName("SLC1A2",50000)
+
+plot_MotifScanByName("SLC16A10",50000)
+
+plot_MotifScanByName("SLC6A19",50000)
+plot_MotifScanByName("SLC6A14",50000)
+
+plot_MotifScanByName("SLC7A6",50000)
+
+plot_MotifScanByName("SLC8A1",50000)
+
+plot_MotifScanByName("SLC9A1",50000)
+
+plot_MotifScanByName("SLC4A7",50000)
+plot_MotifScanByName("SLC12A2",50000)
+
+plot_MotifScanByName("SCNN1A",50000)
+plot_MotifScanByName("SCNN1B",50000)
+plot_MotifScanByName("SCNN1G",50000)
+
+plot_MotifScanByName("ASIC1",50000)
+plot_MotifScanByName("ASIC2",50000)
+plot_MotifScanByName("ASIC3",50000)
+
+plot_MotifScanByName("SCN8A",50000)
+plot_MotifScanByName("SCN10A",50000)
+plot_MotifScanByName("SCN9A",50000)
+plot_MotifScanByName("SCN2A",50000)
+plot_MotifScanByName("SCN4A",50000)
+plot_MotifScanByName("SCN5A",50000)
+
+dev.off()
