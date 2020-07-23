@@ -22,7 +22,7 @@ plot_MotifScan<-function(gene_chr,gene_start,gene_end,gene_padding,title="",stra
     
     #HomerMotifs 
     #ERE download from http://homer.ucsd.edu/homer/motif/HomerMotifDB/homerResults.html
-    motif.ere<-read_homer("motif91.motif")
+    #motif.ere<-read_homer("motif91.motif")
     motif.hif1a<-read_homer("motif152.motif")
     motif.hif1b<-read_homer("motif153.motif")
     motif.hif2a<-read_homer("motif154.motif")
@@ -33,7 +33,7 @@ plot_MotifScan<-function(gene_chr,gene_start,gene_end,gene_padding,title="",stra
     dnaSet<-DNAStringSet(dna)
     
     #Threshold to 1 to get every site
-    motif_scan <- scan_sequences(c(motif.ere,motif.hif1a,motif.hif1b,motif.hif2a), dnaSet, RC = TRUE,  threshold =1, threshold.type = "pvalue")
+    motif_scan <- scan_sequences(c(motif.hif1a,motif.hif1b,motif.hif2a), dnaSet, RC = TRUE,  threshold =1, threshold.type = "pvalue")
     motif_df <- data.frame(motif_scan)
     
     #gene_pos
@@ -80,8 +80,11 @@ plot_MotifScanByName<-function(geneSymbol, padding) {
 }
 
 
-pdf("output.pdf")
+pdf("output-no-ere.pdf")
 plot_MotifScanByName("TFF1",10000)
+
+plot_MotifScanByName("VEGFA",10000)
+
 plot_MotifScanByName("SCN5A",50000)
 plot_MotifScanByName("ATP1A1",50000)
 
